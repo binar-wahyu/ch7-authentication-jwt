@@ -1,25 +1,28 @@
 const { User } = require("../models");
-const passport = require("../lib/passport");
 
 module.exports = {
-  register: async (req, res, next) => {
-    // Kita panggil static method register yang sudah kita buat tadi
+  register: async (req, res) => {
     try {
-      await User.register(req.body);
-      res.redirect("/login");
+      const user = await User.register(req.body);
+      res.json(user);
     } catch (err) {
-      next(err);
+      res.json({ error: err.message });
     }
   },
 
-  login: passport.authenticate("local", {
-    successRedirect: "/whoami",
-    failureRedirect: "/login",
-    failureFlash: true, // Untuk mengaktifkan express flash
-  }),
+  login: async (req, res) => {
+    console.log(req.body);
+    const user = await User.authenticate(req.body);
+    const { id, username } = user;
+    res.json({
+      id,
+      username,
+      accessToken: user.generateToken(),
+    });
+  },
 
   whoami: (req, res) => {
-    /* req.user adalah instance dari User Model, hasil autentikasi dari passport. */
-    res.render("profile", req.user.dataValues);
+    const currentUser = req.user;
+    res.json(currentUser);
   },
 };
