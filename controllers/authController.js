@@ -11,7 +11,6 @@ module.exports = {
   },
 
   login: async (req, res) => {
-    console.log(req.body);
     const user = await User.authenticate(req.body);
     const { id, username } = user;
     res.json({
